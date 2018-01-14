@@ -361,3 +361,12 @@ void DarwinProcess_scanThreads(DarwinProcess *dp) {
    }
    proc->state = state;
 }
+
+bool Process_update(Process* proc, bool isNew, ProcessList* pl, ProcessScanData* psd) {
+   DarwinProcess_setFromKInfoProc(&proc->super, ps->kinfo, tv.tv_sec, preExisting);
+   DarwinProcess_setFromLibprocPidinfo(proc, dpl);
+   DarwinProcess_scanThreads(proc);
+   if(isNew) {
+      proc->super.user = UsersTable_getRef(super->usersTable, proc->super.st_uid);
+   }
+}
