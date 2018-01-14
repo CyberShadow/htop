@@ -76,6 +76,8 @@ typedef struct ProcessList_ {
 
 } ProcessList;
 
+typedef struct ProcessScanData_ ProcessScanData;
+
 ProcessList* ProcessList_new(UsersTable* ut, Hashtable* pidWhiteList, uid_t userId);
 void ProcessList_delete(ProcessList* pl);
 void ProcessList_goThroughEntries(ProcessList* pl);
@@ -114,8 +116,10 @@ void ProcessList_expandTree(ProcessList* this);
 
 void ProcessList_rebuildPanel(ProcessList* this);
 
-Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool* preExisting, Process_New constructor);
+Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool* isNew);
 
 void ProcessList_scan(ProcessList* this);
+
+Process* ProcessList_scanProcess(ProcessList* this, pid_t pid, ProcessScanData* psd);
 
 #endif

@@ -132,9 +132,9 @@ extern ProcessFieldData Process_fields[];
 
 extern ProcessPidColumn Process_pidColumns[];
 
-extern ProcessClass LinuxProcess_class;
+extern ObjectClass LinuxProcess_class;
 
-LinuxProcess* LinuxProcess_new(Settings* settings);
+Process* Process_new(Settings* settings);
 
 void Process_delete(Object* cast);
 
@@ -152,11 +152,29 @@ IOPriority LinuxProcess_updateIOPriority(LinuxProcess* this);
 
 bool LinuxProcess_setIOPriority(LinuxProcess* this, IOPriority ioprio);
 
-void LinuxProcess_writeField(Process* this, RichString* str, ProcessField field);
+void Process_writeField(Process* this, RichString* str, ProcessField field);
 
 long LinuxProcess_compare(const void* v1, const void* v2);
 
 bool Process_isThread(Process* this);
 
+#ifdef HAVE_TASKSTATS
+
+#endif
+
+
+#ifdef HAVE_OPENVZ
+
+#endif
+
+#ifdef HAVE_CGROUP
+
+#endif
+
+#ifdef HAVE_VSERVER
+
+#endif
+
+bool Process_update(Process* proc, bool isNew, ProcessList* pl, ProcessScanData* psd);
 
 #endif

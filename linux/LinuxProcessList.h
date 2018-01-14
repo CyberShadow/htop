@@ -55,6 +55,14 @@ typedef struct LinuxProcessList_ {
    
 } LinuxProcessList;
 
+typedef struct LinuxProcessScanData_ {
+   const char* name;
+   const char* dirname;
+   double period;
+   time_t nowSec;
+   unsigned long long nowMsec;
+} LinuxProcessScanData;
+
 #ifndef PROCDIR
 #define PROCDIR "/proc"
 #endif
@@ -84,22 +92,7 @@ ProcessList* ProcessList_new(UsersTable* usersTable, Hashtable* pidWhiteList, ui
 
 void ProcessList_delete(ProcessList* pl);
 
-
-#ifdef HAVE_TASKSTATS
-
-#endif
-
-#ifdef HAVE_OPENVZ
-
-#endif
-
-#ifdef HAVE_CGROUP
-
-#endif
-
-#ifdef HAVE_VSERVER
-
-#endif
+char* LinuxProcessList_updateTtyDevice(LinuxProcessList* this, unsigned int tty_nr);
 
 void ProcessList_goThroughEntries(ProcessList* super);
 

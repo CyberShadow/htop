@@ -134,6 +134,7 @@ typedef struct ProcessFieldData_ {
 } ProcessFieldData;
 
 // Implemented in platform-specific code:
+Process* Process_new(struct Settings_*);
 void Process_writeField(Process* this, RichString* str, ProcessField field);
 long Process_compare(const void* v1, const void* v2);
 void Process_delete(Object* cast);
@@ -142,15 +143,6 @@ extern ProcessFieldData Process_fields[];
 extern ProcessPidColumn Process_pidColumns[];
 extern char Process_pidFormat[20];
 
-typedef Process*(*Process_New)(struct Settings_*);
-typedef void (*Process_WriteField)(Process*, RichString*, ProcessField);
-
-typedef struct ProcessClass_ {
-   const ObjectClass super;
-   const Process_WriteField writeField;
-} ProcessClass;
-
-#define As_Process(this_)              ((ProcessClass*)((this_)->super.klass))
 
 #define Process_isChildOf(process_, pid_) (process_->tgid == pid_ || (process_->tgid == process_->pid && process_->ppid == pid_))
 
@@ -175,19 +167,21 @@ void Process_printTime(RichString* str, unsigned long long totalHundredths);
 
 void Process_outputRate(RichString* str, char* buffer, int n, double rate, int coloring);
 
-void Process_writeField(Process* this, RichString* str, ProcessField field);
+void Process_defaultWriteField(Process* this, RichString* str, ProcessField field);
 
 void Process_display(Object* cast, RichString* out);
 
 void Process_done(Process* this);
 
-extern ProcessClass Process_class;
+extern ObjectClass Process_class;
 
 void Process_init(Process* this, struct Settings_* settings);
 
 void Process_toggleTag(Process* this);
 
 bool Process_setPriority(Process* this, int priority);
+
+void Process_setCommand(Process* process, const char* command, int len);
 
 bool Process_changePriorityBy(Process* this, size_t delta);
 

@@ -83,6 +83,8 @@ typedef struct ProcessList_ {
 
 } ProcessList;
 
+typedef struct ProcessScanData_ ProcessScanData;
+
 ProcessList* ProcessList_new(UsersTable* ut, Hashtable* pidWhiteList, uid_t userId);
 void ProcessList_delete(ProcessList* pl);
 void ProcessList_goThroughEntries(ProcessList* pl);
@@ -372,14 +374,15 @@ void ProcessList_rebuildPanel(ProcessList* this) {
    }
 }
 
-Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool* preExisting, Process_New constructor) {
+Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool* isNew) {
    Process* proc = (Process*) Hashtable_get(this->processTable, pid);
-   *preExisting = proc;
    if (proc) {
+      *isNew = false;
       assert(Vector_indexOf(this->processes, proc, Process_pidCompare) != -1);
       assert(proc->pid == pid);
    } else {
-      proc = constructor(this->settings);
+      *isNew = true;
+      proc = Process_new(this->settings);
       assert(proc->comm == NULL);
       proc->pid = pid;
    }
@@ -408,5 +411,41 @@ void ProcessList_scan(ProcessList* this) {
          ProcessList_remove(this, p);
       else
          p->updated = false;
+   }
+}
+
+Process* ProcessList_scanProcess(ProcessList* this, pid_t pid, ProcessScanData* psd) {
+   Settings* settings = this->settings;
+   bool isNew = false;
+   Process* proc = ProcessList_getProcess(this, pid, &isNew);
+   
+   bool ok = Process_update(proc, isNew, this, psd);
+   
+   if (ok) {
+      proc->show = ! ((settings->hideKernelThreads   && Process_isKernelThread(proc)) ||
+                      (settings->hideUserlandThreads && Process_isUserlandThread(proc)));
+      if (isNew) {
+         ProcessList_add(this, proc);
+      }
+      this->totalTasks++;
+      if (proc->state == 'R') {
+         this->runningTasks++;
+      }
+      if (Process_isThread(proc)) {
+         if (Process_isKernelThread(proc)) {
+            this->kernelThreads++;
+         } else {
+            this->userlandThreads++;
+         }
+      }
+      proc->updated = true;
+      return proc;
+   } else {
+      if (isNew) {
+         Process_delete((Object*)proc);
+      } else {
+         ProcessList_remove(this, proc);
+      }
+      return NULL;
    }
 }
